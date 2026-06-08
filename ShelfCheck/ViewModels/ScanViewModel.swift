@@ -64,7 +64,7 @@ final class ScanViewModel {
         addSuccess = false
     }
 
-    func addBook(modelContext: ModelContext) {
+    func addBook(modelContext: ModelContext, shelfLocation: String? = nil) {
         guard let isbn = scannedISBN else { return }
         isAddingBook = true
 
@@ -74,6 +74,7 @@ final class ScanViewModel {
         } else {
             book = Book(isbn13: isbn, title: "Unknown Title", authors: [])
         }
+        book.shelfLocation = shelfLocation
 
         modelContext.insert(book)
         try? modelContext.save()

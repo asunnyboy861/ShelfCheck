@@ -4,8 +4,9 @@ import SwiftData
 struct ScanTabView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var scanViewModel = ScanViewModel()
-    @State private var purchaseManager = PurchaseManager()
+    @Environment(PurchaseManager.self) private var purchaseManager
     @AppStorage("isContinuousScan") private var isContinuous = false
+    @AppStorage("defaultShelfLocation") private var defaultShelfLocation = ""
     @State private var isTorchOn = false
     @State private var showResult = false
     @State private var showPaywall = false
@@ -113,6 +114,17 @@ struct ScanTabView: View {
                 }
             }
             .foregroundStyle(Color.shelfRed)
+            .onAppear {
+                if isContinuous {
+                    Task {
+                        try? await Task.sleep(for: .seconds(2))
+                        withAnimation {
+                            showResult = false
+                            scanViewModel.resetScan()
+                        }
+                    }
+                }
+            }
 
         case .maybeOwned(let books):
             HStack(spacing: 8) {
@@ -186,7 +198,7 @@ struct ScanTabView: View {
                 Button {
                     let bookCount = (try? modelContext.fetchCount(FetchDescriptor<Book>())) ?? 0
                     if purchaseManager.canAddBook(currentCount: bookCount) {
-                        scanViewModel.addBook(modelContext: modelContext)
+                        scanViewModel.addBook(modelContext: modelContext, shelfLocation: defaultShelfLocation.isEmpty ? nil : defaultShelfLocation)
                         withAnimation {
                             showResult = false
                             scanViewModel.resetScan()
@@ -209,7 +221,7 @@ struct ScanTabView: View {
                 Button {
                     let bookCount = (try? modelContext.fetchCount(FetchDescriptor<Book>())) ?? 0
                     if purchaseManager.canAddBook(currentCount: bookCount) {
-                        scanViewModel.addBook(modelContext: modelContext)
+                        scanViewModel.addBook(modelContext: modelContext, shelfLocation: defaultShelfLocation.isEmpty ? nil : defaultShelfLocation)
                         withAnimation {
                             showResult = false
                             scanViewModel.resetScan()

@@ -4,7 +4,7 @@ import SwiftData
 struct SettingsView: View {
     @AppStorage("isContinuousScan") private var isContinuousScan = false
     @AppStorage("defaultShelfLocation") private var defaultShelfLocation = ""
-    @State private var purchaseManager = PurchaseManager()
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var showPaywall = false
     @Query private var books: [Book]
 
@@ -89,10 +89,8 @@ struct SettingsView: View {
             Link("Privacy Policy", destination: URL(string: "https://asunnyboy861.github.io/ShelfCheck/privacy.html")!)
             Link("Terms of Use", destination: URL(string: "https://asunnyboy861.github.io/ShelfCheck/terms.html")!)
             Link("Support", destination: URL(string: "https://asunnyboy861.github.io/ShelfCheck/support.html")!)
-            if purchaseManager.isProUser {
-                Button("Restore Purchases") {
-                    Task { await purchaseManager.restorePurchases() }
-                }
+            Button("Restore Purchases") {
+                Task { await purchaseManager.restorePurchases() }
             }
         }
     }

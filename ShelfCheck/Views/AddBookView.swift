@@ -13,7 +13,8 @@ struct AddBookView: View {
     @State private var isLookingUp = false
     @State private var lookupError: String?
     @State private var duplicateWarning: String?
-    @State private var purchaseManager = PurchaseManager()
+    @Environment(PurchaseManager.self) private var purchaseManager
+    @AppStorage("defaultShelfLocation") private var defaultShelfLocation = ""
     @State private var showPaywall = false
 
     private let lookupService = BookLookupService()
@@ -125,6 +126,7 @@ struct AddBookView: View {
             publishYear: Int(year),
             pageCount: Int(pages)
         )
+        book.shelfLocation = defaultShelfLocation.isEmpty ? nil : defaultShelfLocation
         modelContext.insert(book)
         try? modelContext.save()
         dismiss()

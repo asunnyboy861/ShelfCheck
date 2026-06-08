@@ -5,7 +5,7 @@ struct LibraryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Book.addedDate, order: .reverse) private var books: [Book]
     @State private var viewModel = LibraryViewModel()
-    @State private var purchaseManager = PurchaseManager()
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var showPaywall = false
     @State private var selectedBook: Book?
     @State private var exportItem: ExportItem?

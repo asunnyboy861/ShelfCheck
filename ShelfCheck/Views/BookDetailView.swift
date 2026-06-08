@@ -8,7 +8,7 @@ struct BookDetailView: View {
     @State private var newTag = ""
     @State private var showLentSheet = false
     @State private var lentPersonName = ""
-    @State private var purchaseManager = PurchaseManager()
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var showPaywall = false
 
     var body: some View {
