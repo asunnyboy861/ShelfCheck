@@ -44,9 +44,6 @@ struct LibraryView: View {
                         Image(systemName: "arrow.up.arrow.down")
                     }
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
-                }
             }
             .sheet(item: $selectedBook) { book in
                 BookDetailView(book: book)
@@ -69,7 +66,7 @@ struct LibraryView: View {
     }
 
     private var bookList: some View {
-        List(selection: $selectedBook) {
+        List {
             let filtered = viewModel.filteredBooks(from: books)
             let limit = purchaseManager.isProUser ? filtered.count : min(filtered.count, purchaseManager.freeBookLimit)
 

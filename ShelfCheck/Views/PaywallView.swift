@@ -56,7 +56,8 @@ struct PaywallView: View {
 
     private var featureComparison: some View {
         VStack(spacing: 12) {
-            featureRow(icon: "barcode.viewfinder", title: "Unlimited Books", free: "50", pro: "Unlimited")
+            featureRow(icon: "barcode.viewfinder", title: "Scan & Check", free: "Unlimited", pro: "Unlimited")
+            featureRow(icon: "books.vertical", title: "Book Shelf", free: "50 books", pro: "Unlimited")
             featureRow(icon: "arrow.triangle.2.circlepath", title: "Continuous Scan", free: "—", pro: "✓")
             featureRow(icon: "person.crop.circle.badge.plus", title: "Lending Tracker", free: "—", pro: "✓")
             featureRow(icon: "tag.fill", title: "Custom Tags", free: "—", pro: "✓")

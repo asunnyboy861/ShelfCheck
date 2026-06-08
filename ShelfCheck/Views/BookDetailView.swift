@@ -8,6 +8,8 @@ struct BookDetailView: View {
     @State private var newTag = ""
     @State private var showLentSheet = false
     @State private var lentPersonName = ""
+    @State private var purchaseManager = PurchaseManager()
+    @State private var showPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -32,6 +34,9 @@ struct BookDetailView: View {
             }
             .sheet(isPresented: $showLentSheet) {
                 lendingSheet
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(purchaseManager: purchaseManager)
             }
         }
     }
@@ -130,7 +135,7 @@ struct BookDetailView: View {
                     HStack(spacing: 4) {
                         Text(tag)
                             .font(.caption)
-                        if isEditing {
+                        if isEditing && purchaseManager.isProUser {
                             Button {
                                 book.tags.removeAll { $0 == tag }
                             } label: {
@@ -146,7 +151,7 @@ struct BookDetailView: View {
                     .clipShape(Capsule())
                 }
 
-                if isEditing {
+                if isEditing && purchaseManager.isProUser {
                     HStack(spacing: 4) {
                         TextField("Add tag", text: $newTag)
                             .font(.caption)
@@ -194,7 +199,11 @@ struct BookDetailView: View {
                 }
             } else {
                 Button {
-                    showLentSheet = true
+                    if purchaseManager.isProUser {
+                        showLentSheet = true
+                    } else {
+                        showPaywall = true
+                    }
                 } label: {
                     Label("Lend This Book", systemImage: "person.crop.circle.badge.plus")
                 }

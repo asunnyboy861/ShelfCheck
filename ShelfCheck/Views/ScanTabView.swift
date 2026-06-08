@@ -5,7 +5,7 @@ struct ScanTabView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var scanViewModel = ScanViewModel()
     @State private var purchaseManager = PurchaseManager()
-    @State private var isContinuous = false
+    @AppStorage("isContinuousScan") private var isContinuous = false
     @State private var isTorchOn = false
     @State private var showResult = false
     @State private var showPaywall = false
@@ -14,6 +14,7 @@ struct ScanTabView: View {
         ZStack {
             ScannerView(
                 onScan: { isbn in
+                    scanViewModel.setModelContext(modelContext)
                     scanViewModel.handleScan(isbn, modelContext: modelContext)
                     withAnimation { showResult = true }
                 },

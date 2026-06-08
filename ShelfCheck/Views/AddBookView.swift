@@ -12,6 +12,7 @@ struct AddBookView: View {
     @State private var pages = ""
     @State private var isLookingUp = false
     @State private var lookupError: String?
+    @State private var duplicateWarning: String?
     @State private var purchaseManager = PurchaseManager()
     @State private var showPaywall = false
 
@@ -39,6 +40,11 @@ struct AddBookView: View {
                         Text(error)
                             .font(.caption)
                             .foregroundStyle(.red)
+                    }
+                    if let warning = duplicateWarning {
+                        Text(warning)
+                            .font(.caption)
+                            .foregroundStyle(Color.shelfAmber)
                     }
                 }
 
@@ -102,6 +108,15 @@ struct AddBookView: View {
         }
 
         let normalizedISBN = isbn.normalizeISBN()
+
+        // Check for duplicate
+        let descriptor = FetchDescriptor<Book>(predicate: #Predicate { $0.isbn13 == normalizedISBN })
+        let existing = (try? modelContext.fetch(descriptor)) ?? []
+        if let existingBook = existing.first {
+            duplicateWarning = "This book is already in your shelf: \(existingBook.title)"
+            return
+        }
+
         let book = Book(
             isbn13: normalizedISBN,
             title: title,

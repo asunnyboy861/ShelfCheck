@@ -23,23 +23,35 @@ final class ScanViewModel {
         bookMetadata = nil
         lookupError = nil
 
+        // Check exact ISBN match first (synchronous, always works offline)
         let descriptor = FetchDescriptor<Book>(predicate: #Predicate { $0.isbn13 == normalized })
         let existing = (try? modelContext.fetch(descriptor)) ?? []
 
         if let exact = existing.first {
             duplicateStatus = .owned(exact)
+            // Still lookup metadata for display
+            lookupMetadata(for: normalized)
             return
         }
 
-        let allBooks = (try? modelContext.fetch(FetchDescriptor<Book>())) ?? []
-        let fuzzyMatches = findFuzzyMatches(isbn: normalized, in: allBooks)
-        if !fuzzyMatches.isEmpty {
-            duplicateStatus = .maybeOwned(fuzzyMatches)
-        } else {
-            duplicateStatus = .newBook
-        }
+        // No exact match — mark as newBook for now
+        // Fuzzy matching will be re-evaluated after metadata lookup completes
+        duplicateStatus = .newBook
 
         lookupMetadata(for: normalized)
+    }
+
+    /// Called after metadata lookup completes to re-evaluate fuzzy matches
+    func recheckFuzzyMatches(modelContext: ModelContext) {
+        guard duplicateStatus != nil, scannedISBN != nil else { return }
+        // Don't override an exact match
+        if case .owned = duplicateStatus { return }
+
+        let allBooks = (try? modelContext.fetch(FetchDescriptor<Book>())) ?? []
+        let fuzzyMatches = findFuzzyMatches(isbn: scannedISBN!, in: allBooks)
+        if !fuzzyMatches.isEmpty {
+            duplicateStatus = .maybeOwned(fuzzyMatches)
+        }
     }
 
     func resetScan() {
@@ -69,6 +81,8 @@ final class ScanViewModel {
         isAddingBook = false
     }
 
+    private var modelContextRef: ModelContext?
+
     private func lookupMetadata(for isbn: String) {
         isLookingUp = true
         Task {
@@ -77,6 +91,10 @@ final class ScanViewModel {
                 await MainActor.run {
                     self.bookMetadata = meta
                     self.isLookingUp = false
+                    // Re-evaluate fuzzy matches now that we have metadata
+                    if let ctx = self.modelContextRef {
+                        self.recheckFuzzyMatches(modelContext: ctx)
+                    }
                 }
             } catch {
                 await MainActor.run {
@@ -85,6 +103,11 @@ final class ScanViewModel {
                 }
             }
         }
+    }
+
+    /// Store model context for async fuzzy re-evaluation
+    func setModelContext(_ context: ModelContext) {
+        modelContextRef = context
     }
 
     private func findFuzzyMatches(isbn: String, in books: [Book]) -> [Book] {
